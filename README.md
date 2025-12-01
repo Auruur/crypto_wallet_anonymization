@@ -1,5 +1,3 @@
-\---
-
 # 🔐 Breaking and Rebuilding Privacy: Microdata Anonymization and Differential Privacy on Cryptocurrency Wallets Data
 
 **Authors:** Fernando Gonzalez Domenech & Giovanni Murgia
