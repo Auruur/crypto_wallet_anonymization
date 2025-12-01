@@ -84,15 +84,15 @@ $$
 p = \frac{e^\varepsilon}{e^\varepsilon + 1}
 $$
 
-* With probability (p), return the true value
-* With probability (1 - p), return a fair coin flip
+* With probability $(p)$, return the true value
+* With probability $(1 - p)$, return a fair coin flip
 * Using the inverse estimator, we reconstructed the true `high_risk` rate
 
 ### 3. **Microsoft 1-Bit LDP Mechanism**
 
 For numeric values like `sanctions_score`:
 
-* Users normalize (X_i) to ([0,1])
+* Users normalize $(X_i)$ to $[0,1]$
 * Each user sends **one single DP-protected bit**
 * The server aggregates bits and uses an unbiased estimator to recover the original mean
 * Demonstrates strong LDP with minimal communication
@@ -111,9 +111,9 @@ In CDP, a trusted curator holds raw data and adds noise to **query outputs**.
 
 ### 2. **Mean Query (Balance USD)**
 
-* Values clipped to ([L, U]) (1st–99th percentile) to bound sensitivity
+* Values clipped to $[L, U]$ (1st–99th percentile) to bound sensitivity
   → prevents “whale” outliers dominating the mean
-* Sensitivity = ((U - L) / n)
+* Sensitivity = $((U - L) / n)$
 * Laplace noise added to the mean
 * KDE plots show noisy means approaching the true clipped mean for larger ε
 
