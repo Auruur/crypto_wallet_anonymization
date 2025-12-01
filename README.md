@@ -80,9 +80,9 @@ LDP protects users **before data collection**, meaning the server never sees the
 
 Each user perturbs their own binary value using:
 
-[
+$$
 p = \frac{e^\varepsilon}{e^\varepsilon + 1}
-]
+$$
 
 * With probability (p), return the true value
 * With probability (1 - p), return a fair coin flip
