@@ -1,78 +1,132 @@
-# 🔐 Breaking and Rebuilding Privacy: Anonymizing Crypto Wallets Data
+---
 
-**Authors:** Fernando Gonzalez Domenech & Giovanni Murgia  
+# 🔐 Breaking and Rebuilding Privacy: Anonymizing and Privatizing Crypto Wallets Data
+
+**Authors:** Fernando Gonzalez Domenech & Giovanni Murgia
 
 ---
 
 ## 📘 Project Overview
 
-This project investigates **privacy-preserving techniques** applied to **cryptocurrency wallet data**, a domain known for its sensitive financial and behavioral information.  
-The goal is to anonymize a synthetic dataset while maintaining enough utility for analytical modeling.
+This repository contains two complementary privacy studies performed on the same synthetic **cryptocurrency wallet dataset**, focusing on both **microdata anonymization techniques** (HW1) and **Differential Privacy (DP)** mechanisms (HW2).
+The goal is to understand how different privacy frameworks protect sensitive financial data while maintaining analytical utility.
 
 ---
 
-## 🧾 Dataset
+# 🧾 Dataset
 
-- **Rows:** 10,000  
-- **Attributes:** 10  
-- **Source:** Generated via [Mockaroo.com](https://www.mockaroo.com) with custom Ruby scripts for realistic weighted distributions.  
-
-### 🔎 Key Columns
-
-| Category | Attributes | Description |
-|-----------|-------------|-------------|
-| Identifier | `wallet_address` | Unique crypto wallet address |
-| Quasi-identifiers | `network`, `country`, `client_type`, `last_active` | Used for generalization and suppression |
-| Sensitive attributes | `balance_usd`, `activity_score`, etc. | Financial or behavioral data requiring protection |
+* **Rows:** 10,000
+* **Attributes:** 10
+* **Source:** Generated via Mockaroo with custom Ruby scripts
+* Contains identifiers, quasi-identifiers, and sensitive attributes such as
+  `balance_usd`, `sanctions_score`, `activity_score`, and a binary `high_risk` flag.
 
 ---
 
-## 🧠 Anonymization Techniques
+# 🔒 Homework 1: Microdata Protection Techniques
 
-| Technique | Description |
-|------------|-------------|
-| **Identifier Masking** | Replaced all characters after the first six with `*` to anonymize wallet addresses. |
-| **QI Generalization** | Grouped countries outside the top 10 under “Other”, simplified client types (human vs. non-human), and binned balances into intervals. |
-| **Noise Perturbation (Optional)** | Added small random noise to balance values to retain analytical usability. |
-| **Local Suppression** | Suppressed quasi-identifiers appearing in fewer than 5 records to enforce **k ≥ 5** anonymity. |
+(unchanged — your existing text fits perfectly)
 
----
-
-## 📊 Evaluation
-
-Two aspects were evaluated before and after anonymization:
-
-1. **k-Anonymity** — verified that each combination of quasi-identifiers had at least 5 identical records.  
-2. **Model Utility** — trained a **Logistic Regression** model to verify that predictive performance remained stable post-anonymization.
+✔ Identifier masking
+✔ QI generalization
+✔ Local suppression ensuring **k ≥ 5**
+✔ Optional mild perturbation
+✔ Evaluation via k-anonymity + logistic regression utility
 
 ---
 
-## 🧩 Results
+# 🔐 Homework 2: Differential Privacy Protection
 
-- Achieved **k ≥ 5** for all quasi-identifier groups.  
-- Minimal degradation in logistic regression performance, showing that **privacy protection can coexist with analytical utility**.  
+The second part of the project applies **Differential Privacy (DP)** to the same dataset, exploring both **Local** and **Central** DP mechanisms and their impact on statistical utility.
+
+## 🟦 Local Differential Privacy (LDP)
+
+We implemented two LDP mechanisms on the binary `high_risk` indicator:
+
+### 1. **Trivial Coin Toss Mechanism**
+
+A simple privacy mechanism returning the true value 50% of the time and a random coin flip the other 50%.
+Used as an intuitive introduction (non-parameterized privacy).
+
+### 2. **ε-Coin Toss Mechanism (Randomized Response)**
+
+A tunable LDP mechanism where each user perturbs their own value before sharing it:
+
+[
+p = \frac{e^\varepsilon}{e^\varepsilon + 1}
+]
+
+* with probability (p): return the true value
+* otherwise: return a fair coin flip
+
+Using the inverse estimator, we showed that the true proportion of high-risk users can be reconstructed despite local noise.
 
 ---
 
-## 💭 Discussion
+## 🟩 Central Differential Privacy (CDP)
 
-The experiment highlights how **privacy–utility trade-offs** can be effectively managed in sensitive financial datasets.  
-Further research directions:
-- Applying anonymization to **larger or more complex datasets**.  
-- Evaluating other ML models (e.g., Decision Trees, Neural Networks) on anonymized data.  
+In CDP, a **trusted curator** holds the raw data and adds Laplace noise to query outputs.
+
+We applied CDP to two key statistical queries:
+
+### **1. Counting Query (high-risk count)**
+
+* Sensitivity = 1
+* Laplace noise added to the count for multiple ε values
+* Visualized how the distribution of noisy counts tightens as ε increases
+
+### **2. Mean Query (balance_usd)**
+
+* Values clipped to ([L, U]) using the 1st–99th percentiles to bound sensitivity
+* Sensitivity = ((U-L)/n)
+* Repeated DP mean computation for different ε to illustrate convergence to the true clipped mean
+* Demonstrated how **clipping prevents “whale” values** from exploding sensitivity and destroying utility
 
 ---
 
-## ⚙️ Files in This Repository
+## 🟧 Additional Mechanism: Microsoft 1-Bit LDP
 
-| File | Description |
-|------|--------------|
-| `PPIA_HW1.ipynb` | Jupyter Notebook containing dataset generation, anonymization, and evaluation code. |
+We also implemented the **Microsoft Low-Communication 1-Bit LDP Mechanism**, where each user encodes a normalized numeric value into a single DP-protected bit.
+Despite the extreme lossy compression, the true mean can still be **unbiasedly estimated** from the collected bits.
 
 ---
 
-## 🧰 Requirements
+## 🟥 Above Threshold (Sparse Vector Technique)
 
-To run the notebook:
+Finally, we implemented the **Above Threshold Mechanism**, a CDP algorithm used to:
+
+* test many statistics
+* spend only a single ε
+* reveal **only the first query** whose noisy value exceeds a **noisy threshold**
+
+Applied to `sanctions_score` means per country, this mechanism returned only the name of the first country crossing the threshold (e.g., *Slovakia*), hiding all other values.
+
+---
+
+# 📊 Key Findings
+
+* **Both Local and Central DP introduce a clear privacy–utility tradeoff:** smaller ε increases noise, larger ε improves accuracy.
+* **LDP protects raw user data before collection**, ideal when no trust exists in the server.
+* **CDP provides higher utility**, suitable when a trusted curator holds the dataset.
+* Across all DP methods, analytical insights remain possible without exposing sensitive individual-level information.
+
+---
+
+# 📁 Files in This Repository
+
+| File                                | Description                                                                                                |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `PPIA_HW1.ipynb`                    | Microdata anonymization techniques (masking, suppression, generalization, evaluation).                     |
+| `PPIA_HW2.ipynb` | Differential Privacy experiments (LDP, CDP, Laplace, Randomized Response, Microsoft LDP, Above Threshold). |
+
+---
+
+# 🧰 Requirements
+
+To run the notebooks:
+
 ```bash
-pip install pandas numpy scikit-learn matplotlib
+pip install pandas numpy scikit-learn matplotlib seaborn
+```
+
+---
